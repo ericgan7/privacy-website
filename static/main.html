@@ -1,0 +1,141 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+
+	<title>Tour Data</title>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<!-- BOOTSTRAP -->
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+	<!-- Google Maps-->
+	<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBqpLvV-_k0XAhR_RaEprhlDjorrkp-UP0"></script>
+	<!-- events -->
+	<script src="/static/js/draw.js"></script>
+	<link rel="stylesheet" href="/static/css/custom.css" />
+</head>
+<body>
+	<h1 id= "Banner">Tour Data [banner/logo?]</h1>
+	<div class="container-fluid">
+		<div class="row content">
+			<div class="col-sm-3 sidenav">
+				<h3>Tours</h3>
+				<button class="tours btn btn-primary" type="button" data-toggle="collapse" data-target="#tourList">All Tours <span class="caret"></span></button>
+					<ul class="collapse nav nav-pills nav-stacked" id="tourList">
+					</ul><br>
+				<form>
+					<div class="form-inline">
+						<div class="input-group">
+							<div class="input-group-addon">
+								<span class="input-group-text">Tours</span>
+							</div>
+							<input type="number" class="form-control form-control-inline" min="1" max="279" id="querySizeInput" placeholder="279">
+						</div>
+						<div-inline class="dropdown">
+							<button class="form-control-inline btn btn-primary dropdown-toggle" id="deltaInput" type="button" data-toggle="dropdown">
+								Delta
+								<span class="caret"></span>
+							</button>
+							<ul class="dropdown-menu">
+								<li><p onclick=change(0.2)>0.2</p></li>
+								<li><p onclick=change(0.3)>0.3</p></li>
+							</ul>
+						</div-inline>
+						<button class="btn btn-default" id="tempButton" type="button">
+							<span class="glyphicon glyphicon-search"></span>
+						</button>
+					</div>
+
+				</form>
+			</div>
+			<ul class="nav nav-pills col-sm-9" id="navSelection">
+				<li><a href="#querySelect" data-toggle="pill">Search</a></li>
+				<li class="active"><a href="#mapSelect" data-toggle="pill">Map</a></li>
+				<li><a href="#tableSelect" data-toggle="pill">Table</a></li>
+				<li><a href="#compareSelect" data-toggle="pill">Comparison</a></li>
+			</ul>
+			<div class="tab-content">
+				<div id="querySelect" class="tab-pane fade in">
+					<div class="box col-sm-9">
+						<form class="embed-container form-horizontal">
+							<div class="form-group">
+								<select class="form-control" id="dataType">
+									<option>Idle Assignment</option>
+								</select>
+							</div>
+							<div-inline class="form-group">
+								<label for="sFile">Origin & Destination File</label>
+								<input type="file" class="form-control-file" id="sFile" name = "sFile" onchange="uploadFile('sFile')"/>
+								<p>
+									Requires Headers { origin_id, destination_id, timestamp }
+								</p>
+							</div-inline>
+							<div-inline class="form-group">
+								<label for="lFile">Latitude & Longitude File</label>
+								<input type="file" class="form-control-file" id="lFile" name="lFile" onchange="uploadFile('lFile')"/>
+								<p>
+									Requires Headers { location_id, latitude, longitude }
+								</p>
+							</div-inline>
+							<div class="form-group">
+								<label for="startDate">Start</label>
+								<input type="date" id="startDate" placeholder="date"/>
+								<input type="time" id="startTime" placeholder="time"/>
+
+								<label> - </label>
+
+								<label for="endDate">End</label>
+								<input type="date" id="endDate" placeholder="date"/>
+								<input type="time" id="endTime" placeholder="time"/>
+							</div>
+							<div class="form-group">
+								<label for="numTours">Parameters</label>
+								<input type="number" id="numTours" placeholder="Number of Tours"/>
+								<input type="number" id="maxK" placeholder="K"/>
+								<input type="number" id="delta" placeholder="Delta"/>
+							</div>
+							<div class="form-group">
+								<button class="btn btn-primary" id="searchButton" type="button">
+									<p>Search  <span class="glyphicon glyphicon-search"></span></p>
+								</button>
+							</div>
+						</form>
+					</div>
+				</div>
+				<div id="mapSelect" class="tab-pane fade in active">
+					<div class="box col-sm-9">
+						<div class="embed-container" id="viewDiv">
+							
+						</div>
+					</div>
+				</div>
+				<div id="tableSelect" class="tab-pane fade in">
+					<div class="box col-sm-9">
+						<table class="table tablde-bordered table-hover" id="resultsTable">
+							<thead>
+								<tr>
+									<th>Tour ID</th>
+									<th>Data</th>
+								</tr>
+							</thead>
+							<tbody id="resultsBody">
+							</tbody>
+						</table>
+					</div>
+				</div>
+				<div id="compareSelect" class="tab-pane fade in">
+					<div class="box col-sm-9">
+				
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<footer class="container-fluid">
+		<p>Footer Text</p>
+	</footer>
+
+</body>
+</html>
