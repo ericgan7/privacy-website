@@ -133,5 +133,14 @@
 			.table-hover .table-primary:hover > th {
 				background-color: #9fcdff;
 			}
+		.form-group {
+			width: 90%;
+			padding-left:5%;
+		}
 
+		.button-text {
+			vertical-align: middle;
+			text-align: center;
+			margin-bottom: 0%;
+		}
 </style >

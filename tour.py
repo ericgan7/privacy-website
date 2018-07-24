@@ -40,25 +40,28 @@ class Tour(object):
 		self.supplyProb
 		self.date = ''
 
-	def run(self, date, maxK, delta, time = None, limit = 0):
+	def run(self, date, maxK, delta, limit = 0):
 		self.date = date
-		d = date.split('-')
-		t = self.getData(limit, time)
-		dept = datetime(datetime.now().year+1, int(d[1]), int(d[2]), hour = int(t[0]), minute = int(t[1]))
+		dept = self.getData(limit)
 		self.formatData(int(dept.timestamp()))
 		return self.runDiffusion(maxK, delta)
 
-	def check(self, date, time, target):
-		if  target:
-			return date == self.date and time == target
+	def check(self, date):
+		date = (datetime.strptime(date, self.dateFormat))
+		if (self.date[0] and self.date[1]):
+			return date >= self.date[0] and date <= self.date[1]
+		elif (self.date[0]):
+			return date >= self.date[0]
+		elif (self.date[1]):
+			return date <= self.date[1]
 		else:
-			return date == self.date
+			return True
 
-	def getData(self, limit, time = None):
+	def getData(self, limit):
 		num_o = 0
 		num_d = 0
 		unlimitedResults = True
-		if limit > 0:
+		if limit and limit > 0:
 			unlimitedResults = False
 		else:
 			limit = 2
@@ -72,39 +75,32 @@ class Tour(object):
 		total = 0
 		t = 0
 		for row in self.sreader:
-			if t == 0:
-				t = row['timestamp'][11:]
-			if self.check(row['timestamp'][:10], row['timestamp'][11:], time):
-				add = False
+			if self.check(row['timestamp'][:10]):
+				if t == 0:
+					t = datetime.strptime(row['timestamp'][:10], self.dateFormat)	
 				if unlimitedResults:
 					limit += 1
-				if (row['destination_id'] not in self.origins) and len(self.origins) < limit and row['destination_id'] in self.locations:
-					self.origins[row['destination_id']] = num_o
-					self.originLoc.append(self.locations[row['destination_id']])
-					supply[row['destination_id']] = 1
-					num_o += 1
-					total += 1
-					add = True
-				if (row['origin_id'] not in self.destinations) and len(self.destinations) < limit and row['origin_id'] in self.locations:
-					self.destinations[row['origin_id']] = num_d
-					self.destinationLoc.append(self.locations[row['origin_id']])
-					num_d += 1
-					add = True
-				if (add):
-					self.data.append(row)
-				elif (row['origin_id'] in self.destinations and row['destination_id'] in self.origins):
+				if len(self.data) < limit:
+					if (row['destination_id'] not in self.origins) and row['destination_id'] in self.locations and (row['origin_id'] not in self.destinations) and row['origin_id'] in self.locations:
+						self.origins[row['destination_id']] = num_o
+						self.originLoc.append(self.locations[row['destination_id']])
+						supply[row['destination_id']] = 1
+						num_o += 1
+						self.destinations[row['origin_id']] = num_d
+						self.destinationLoc.append(self.locations[row['origin_id']])
+						num_d += 1
+						self.data.append(row)
+						total += 1
+				if (row['origin_id'] in self.destinations and row['destination_id'] in self.origins):
 					supply[row['destination_id']] += 1
 					total += 1
 		for i, s in enumerate(supply.values()):
 			self.supplyProb.append(float(s)/total)
-		if time:
-			return time.split(':')
-		else:
-			return t.split(':')
+		return t
 
 	def formatData(self, dept):
-		if (len(self.origins) > 25 or len(self.destinations) > 25):
-			print("TOO MANY STOPS")
+		if (len(self.origins) > 100 or len(self.destinations) > 100):
+			print("Too Many stops to calculate")
 		self.matrix = matrix(0., (len(self.origins), len(self.destinations)))
 		self.lmatrix = matrix(0., self.matrix.size)
 		try:
@@ -113,19 +109,30 @@ class Tour(object):
 			for i, row in enumerate(reader):
 				if i == 0:
 					continue
-				for j, data in enumerate(row	):
+				for j, data in enumerate(row):
 					if j == 0: 
 						continue
-					self.lmatrix[i-1,j-1] = float(data)
+				if (i < self.lmatrix.size[0] and j < self.lmatrix.size[1]):
+					try:
+						self.lmatrix[i-1,j-1] = float(data)
+					except:
+						import pdb; pdb.set_trace()
 		except FileNotFoundError:
 			self.lmatrix = distance.getDistanceMatrix(self.originLoc, self.destinationLoc, dept)
 			distance.storeResult('distances.csv', self.lmatrix, self.origins, self.destinations)
 		supply = [int(x) for x in range(len(self.supplyProb))]
 		for row in self.data:
 			#idle relocation - coming from the last drop off points to new pickup points
-			x = random.choice(supply, p = self.supplyProb)
-			#perhaps should sample multiple places and pick the closest
 			y = self.destinations[row['origin_id']]
+			possible_x = random.choice(supply, size = 3, p = self.supplyProb)
+			x = possible_x[0]
+			#item is converting numpy int to native int.
+			current_distance = self.lmatrix[x.item(),y]
+			for i in possible_x:
+				if self.lmatrix[x.item(),y] < current_distance:
+					current_distance = self.lmatrix[x.item(),y]
+					x = i
+			#perhaps should sample multiple places and pick the closest
 			self.matrix[x.item(), y] += 1.
 
 	def runDiffusion(self, maxK, delta):

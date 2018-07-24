@@ -4,6 +4,7 @@ import pdb
 import random
 import tour
 import display
+from datetime import datetime
 
 app = Flask(__name__, template_folder = './static')
 drawFunc = draw.draw()
@@ -33,20 +34,26 @@ def getTour(param):
 			if(drawFunc.run(i, delta)):
 				iteration += 1
 	return jsonify(drawFunc.getData())
-@data.route("/run/OD", methods=['GET'])
+@data.route("/run/OD", methods=['POST'])
 def getOD():
-	import pdb; pdb.set_trace()
-	delta = float(param[:3])
-	num = int(param[3:])
+	param = request.json
+	if not (param['sFile'] and ['param.lFile']):
+		param['sFile'] = 'sample.csv'
+		param['lFile'] = 'location.csv'
+	start = None
+	end = None
+	if (param['startDate']):
+		start = datetime.strptime(param['startDate'], '%Y-%m-%d')
+	if (param['endDate']):
+		end = datetime.strptime(param['endDate'], '%Y-%m-%d')
+	dates = (start, end)
 	lp = tour.Tour()
-	sfile = 'sample.csv'
-	lfile = 'location.csv'
-	lp.new(sfile, lfile)
-	return jsonify(display.assignTour(lp.run("2017-01-01", num, delta, limit=10)))
+	lp.new('data/'+param['sFile'], 'data/'+param['lFile'])
+	return jsonify(display.assignTour(lp.run(dates, param['maxK'], param['delta'], limit=param['num'])))
 @data.route("/run/OD/<name>", methods=["POST"])
-def uploadSFile(name):
+def uploadFile(name):
 	if request.method == 'POST':
-		request.files[name].save(name+'.csv')
+		request.files[name].save('data/'+name+'.csv')
 		return "SUCCESSFUL UPLOAD"
 	return "ERROR IN UPLOAD"
 

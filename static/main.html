@@ -9,6 +9,8 @@
 	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
 	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
 	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+	<link href="https://gitcdn.github.io/bootstrap-toggle/2.2.2/css/bootstrap-toggle.min.css" rel="stylesheet">
+	<script src="https://gitcdn.github.io/bootstrap-toggle/2.2.2/js/bootstrap-toggle.min.js"></script>
 	<!-- Google Maps-->
 	<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBqpLvV-_k0XAhR_RaEprhlDjorrkp-UP0"></script>
 	<!-- events -->
@@ -23,6 +25,14 @@
 				<h3>Tours</h3>
 				<button class="tours btn btn-primary" type="button" data-toggle="collapse" data-target="#tourList">All Tours <span class="caret"></span></button>
 					<ul class="collapse nav nav-pills nav-stacked" id="tourList">
+						<li>
+							<a>
+								Select
+								<span>
+									<input id="selectToggle" type="checkbox" checked data-toggle="toggle" data-on="ALL" data-off="NONE" data-width="100">
+								</span>
+							</a>
+						<li/>
 					</ul><br>
 				<form>
 					<div class="form-inline">
@@ -60,34 +70,31 @@
 					<div class="box col-sm-9">
 						<form class="embed-container form-horizontal">
 							<div class="form-group">
+								<label for="dataType">Data Type</label>
 								<select class="form-control" id="dataType">
 									<option>Idle Assignment</option>
 								</select>
 							</div>
-							<div-inline class="form-group">
+							<div class="form-group">
 								<label for="sFile">Origin & Destination File</label>
 								<input type="file" class="form-control-file" id="sFile" name = "sFile" onchange="uploadFile('sFile')"/>
 								<p>
 									Requires Headers { origin_id, destination_id, timestamp }
 								</p>
-							</div-inline>
-							<div-inline class="form-group">
+							</div>
+							<div class="form-group">
 								<label for="lFile">Latitude & Longitude File</label>
 								<input type="file" class="form-control-file" id="lFile" name="lFile" onchange="uploadFile('lFile')"/>
 								<p>
 									Requires Headers { location_id, latitude, longitude }
 								</p>
-							</div-inline>
+							</div>
 							<div class="form-group">
 								<label for="startDate">Start</label>
-								<input type="date" id="startDate" placeholder="date"/>
-								<input type="time" id="startTime" placeholder="time"/>
-
+								<input type="date" id="startDate"/>
 								<label> - </label>
-
 								<label for="endDate">End</label>
-								<input type="date" id="endDate" placeholder="date"/>
-								<input type="time" id="endTime" placeholder="time"/>
+								<input type="date" id="endDate"/>
 							</div>
 							<div class="form-group">
 								<label for="numTours">Parameters</label>
@@ -97,7 +104,7 @@
 							</div>
 							<div class="form-group">
 								<button class="btn btn-primary" id="searchButton" type="button">
-									<p>Search  <span class="glyphicon glyphicon-search"></span></p>
+									<p class="button-text">Search  <span class="glyphicon glyphicon-search"></span></p>
 								</button>
 							</div>
 						</form>
