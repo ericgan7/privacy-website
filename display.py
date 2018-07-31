@@ -10,3 +10,17 @@ def assignTour(data):
 		if total >= index:
 			print("probability total " + str(total) + ', ' + str(index))
 			return (dataSet[0], dataSet[1])
+
+def formatProb(data):
+	import pdb; pdb.set_trace()
+	supply = data[0]
+	supProb = data[1]
+	demand = data[2]
+	demProb = data[3]
+	sup = {}
+	dem = {}
+	for index, key in enumerate(supply.keys()):
+		sup[key] = supProb[index]
+	for index, key in enumerate(demand.keys()):
+		dem[key] = demProb[index]
+	return {'origin': sup, 'destination': demand}

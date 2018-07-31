@@ -20,7 +20,7 @@ function init() {
 function initMap() {
 	map = new google.maps.Map(document.getElementById('viewDiv'), {
 		center: { lat: 40.729375, lng: -73.951556 },
-		zoom: 11
+		zoom: 11 
 	});
 	console.log("init");
 }
@@ -73,9 +73,6 @@ function fetchData() {
 		var idData = tourData[0];
 		var locationData = tourData[1];
 		for (key in locationData) {
-			if (key == 0) {
-				continue;
-			}
 			populateMap(key, locationData[key], key%4);
 			populateTable(key, idData[key], locationData[key]);
 			k = key.toString();
@@ -211,7 +208,6 @@ function populateTable(tourID, idData, locationData) {
 	id.innerHTML = tourID;
 	row.appendChild(id);
 	var d;
-	var values = [0, 1, 2, 3];
 	for (index in idData) {
 		d = document.createElement('td');
 		d.innerHTML = idData[index].toString() + ', ' + locationData[index].toString();

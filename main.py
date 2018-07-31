@@ -16,6 +16,8 @@ def home():
 
 app.register_blueprint(views)
 
+lp = tour.Tour()
+
 data = Blueprint('data_routes', __name__)
 @data.route("/run/tourset/<param>")
 def getTour(param):
@@ -47,15 +49,23 @@ def getOD():
 	if (param['endDate']):
 		end = datetime.strptime(param['endDate'], '%Y-%m-%d')
 	dates = (start, end)
-	lp = tour.Tour()
 	lp.new('data/'+param['sFile'], 'data/'+param['lFile'])
 	return jsonify(display.assignTour(lp.run(dates, param['maxK'], param['delta'], limit=param['num'])))
+
 @data.route("/run/OD/<name>", methods=["POST"])
 def uploadFile(name):
 	if request.method == 'POST':
 		request.files[name].save('data/'+name+'.csv')
 		return "SUCCESSFUL UPLOAD"
 	return "ERROR IN UPLOAD"
+
+@data.route("/get/supplydemand", methods=['GET'])
+def getProb():
+	return jsonify(display.formatProb(lp.getProb()))
+
+@data.route("/get/distance", methods=['GET'])
+def getDistance():
+	return jsonify()
 
 @data.route("/map")
 def getStops():

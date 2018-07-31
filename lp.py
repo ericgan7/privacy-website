@@ -162,7 +162,7 @@ class ODFilter(object):
 				else:
 					self.tours.append(mat)
 
-	def getResults(self, data, ori, dest):
+	def getResults(self, ori, dest, oLoc, dLoc):
 		if (self.diffusion):
 			results = []
 			for index in range(len(self.validTours)):
@@ -170,17 +170,17 @@ class ODFilter(object):
 				k = 0
 				locations = {}
 				ids = {}
-				for i in range(self.o):
-					row = []
-					for j in range(self.d):
-						if(mat[i,j] > 0.):
-							k += 1
+				for i, x in enumerate(ori):
+					for j, y in enumerate(dest):
+						if(mat[i, j] > 0.):
 							try: 
-								locations[k] = (ori[i], dest[j])
-								ids[k] = (i,j)
+								locations[k] = (oLoc[ori[x]], dLoc[dest[y]])
+								ids[k] = (x, y)
+								k += 1
 							except:
 								import pdb; pdb.set_trace()
 				results.append((ids, locations, self.diffusion[index]))
+			import pdb; pdb.set_trace()
 			return results
 		return None
 

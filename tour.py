@@ -25,6 +25,8 @@ class Tour(object):
 		self.supplyProb = []
 		self.demandProb = []
 		self.date = ''
+		self.supply = {}
+		self.demand = {}
 
 	def new(self, stopName, locationName):
 		self.origins = {}
@@ -41,6 +43,8 @@ class Tour(object):
 		self.supplyProb = []
 		self.demandProb = []
 		self.date = ''
+		self.supply = {}
+		self.demand = {}
 
 	def run(self, date, maxK, delta, limit):
 		self.date = date
@@ -58,7 +62,6 @@ class Tour(object):
 			return date <= self.date[1]
 		else:
 			return True
-
 	def getData(self, limit):
 		num_o = 0
 		num_d = 0
@@ -70,11 +73,9 @@ class Tour(object):
 					self.locations[row['location_id']] = (row['latitude'] +','+ row['longitude'])
 			except KeyError:
 				import pdb; pdb.set_trace()
-		supply = {}
-		demand = {}
-		t = self.getSupplyDemand(supply, demand)
-		s = list(supply)
-		d = list(demand)
+		t = self.getSupplyDemand()
+		s = list(self.supply)
+		d = list(self.demand)
 		for i in range(limit):
 			x = random.choice(s, p = self.supplyProb)
 			y = random.choice(d, p = self.demandProb)
@@ -87,7 +88,7 @@ class Tour(object):
 			self.data.append((x,y))
 		return t
 
-	def getSupplyDemand(self, supply, demand):
+	def getSupplyDemand(self):
 		total = 0
 		t = 0
 		for row in self.sreader:
@@ -97,17 +98,17 @@ class Tour(object):
 					t = datetime(datetime.now().year + 1, date.month, date.day, date.hour, date.minute)
 				if row['origin_id'] in self.locations and row['destination_id'] in self.locations:
 					total += 1
-					if (row['destination_id'] not in supply):
-						supply[row['destination_id']] = 1
+					if (row['destination_id'] not in self.supply):
+						self.supply[row['destination_id']] = 1
 					else:
-						supply[row['destination_id']] += 1
-					if (row['origin_id'] not in demand):
-						demand[row['origin_id']] = 1
+						self.supply[row['destination_id']] += 1
+					if (row['origin_id'] not in self.demand):
+						self.demand[row['origin_id']] = 1
 					else:
-						demand[row['origin_id']] += 1
-		for i, s in enumerate(demand.values()):
+						self.demand[row['origin_id']] += 1
+		for i, s in enumerate(self.demand.values()):
 			self.demandProb.append(float(s)/total)
-		for i, s in enumerate(supply.values()):
+		for i, s in enumerate(self.supply.values()):
 			self.supplyProb.append(float(s)/total)
 		return t
 
@@ -152,10 +153,16 @@ class Tour(object):
 		print(self.lmatrix)
 		self.solver.new(self.matrix, self.lmatrix, len(self.origins), len(self.destinations))
 		self.solver.run(maxK, delta)
-		return self.solver.getResults(self.data, self.originLoc, self.destinationLoc)
+		return self.solver.getResults(self.origins, self.destinations, self.originLoc, self.destinationLoc)
+
+	def getProb(self):
+		return (self.supply, self.supplyProb, self.demand, self.demandProb)
 """
 t = Tour()
-t.new('sample.csv', 'location.csv')
-print(t.run('2017-01-01', 4, 100, limit = 10, time = '00:00:00'))
-		"""	
+t.new('data/sample.csv', 'data/location.csv')
+data = t.run((None, None), 4, 150, limit = 5)
+import display
+x = display.formatProb(t.getProb())
+print(x)
+"""
 				
