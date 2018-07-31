@@ -6,7 +6,7 @@ def assignTour(data):
 	index = random.random()
 	total = 0;
 	for dataSet in data:
-		total += dataSet[1]
+		total += dataSet[2]
 		if total >= index:
-			print(dataSet[0])
-			return dataSet[0]
+			print("probability total " + str(total) + ', ' + str(index))
+			return (dataSet[0], dataSet[1])

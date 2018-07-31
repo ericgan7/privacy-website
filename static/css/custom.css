@@ -143,4 +143,16 @@
 			text-align: center;
 			margin-bottom: 0%;
 		}
+		#Banner {
+			background-color: #57068c;
+			height: auto;
+			width: 100%;
+			padding-top: 5%;
+			padding-bottom: 5%;
+		}
+		#BannerText {
+			font: Arial;
+			color: white;
+			text-align: center;
+		}
 </style >

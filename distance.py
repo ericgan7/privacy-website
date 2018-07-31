@@ -12,7 +12,6 @@ def getDistanceMatrix(origin, destination, dept):
 	linkCost = matrix(0., (len(origin), len(destination)))
 	delay = (len(destination)+2)/ 10.
 	t = time.time()
-	import pdb; pdb.set_trace()
 	while progress < len(origin):
 		payload = {
 			'origins' : origin[progress],
@@ -26,15 +25,15 @@ def getDistanceMatrix(origin, destination, dept):
 			print('ERROR FETCHING DISTANCES : ' + str(results.status_code))
 		else:
 			mat = json.loads(results.text)
-			for i, row in enumerate(mat['rows']):
-				for j, data in enumerate(row['elements']):
-					try:
-						linkCost[i+progress, j] = data['duration']['value']+data['duration_in_traffic']['value']
-					except KeyError:
-						linkCost[i+progress, j] = data['duration']['value']
 			if(mat['status'] != 'OK'):
 				print('QUERY ERROR')
 			else:
+				for i, row in enumerate(mat['rows']):
+					for j, data in enumerate(row['elements']):
+						try:
+							linkCost[i+progress, j] = data['duration']['value']+data['duration_in_traffic']['value']
+						except KeyError:
+							linkCost[i+progress, j] = data['duration']['value']
 				progress += 1
 	print(time.time() - t)
 	return linkCost

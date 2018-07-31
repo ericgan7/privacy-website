@@ -6,7 +6,7 @@ recordParam = False
 
 class ODFilter(object):
 	def __init__(self, matrix = None, lmatrix = None, origins = None, destinations = None):
-		solvers.options['maxiters'] = 100
+		solvers.options['maxiters'] = 200
 		self.tours = []
 		self.validTours = []
 		self.invalidTours = []
@@ -38,6 +38,26 @@ class ODFilter(object):
 		self.diffusion = None
 		if (recordParam):
 			self.record(self.original, 'Original', '', self.o, self.d)
+
+	def optimizeLinkCost(self):
+		costMat = matrix(self.linkCost, (len(self.original), 1))
+		variableConstraints = matrix(-1.*numpy.eye(len(costMat)))
+		equalityConstraints = matrix(0., (self.o + self.d, len(costMat)))
+		variableSolutions = matrix(numpy.zeros(len(costMat)), (len(costMat), 1))
+		equalitySolutions = matrix(0., (self.o + self.d, 1))
+		for i in range(self.d):
+			temp = self.original[:, i]
+			for index in range(self.o):
+				equalityConstraints[i,index + self.o*i] = 1
+			equalitySolutions[i] = sum(temp)
+		for i in range(self.o):
+			temp = self.original[i, :]
+			for index in range(self.d):
+				equalityConstraints[i + self.d, self.o*index + i] = 1
+			equalitySolutions[self.d + i] = sum(temp)
+		self.original = matrix(solvers.lp(costMat, variableConstraints, variableSolutions,
+				equalityConstraints, equalitySolutions, solver='glpk')['x'], (self.o, self.d))
+		print(self.original)
 
 	def generateTours(self, max):
 		while self.k < max:
@@ -71,6 +91,10 @@ class ODFilter(object):
 			self.tours.append(newMat['x'])
 			self.k += 1
 
+	def inverseOptimization(self):
+		objectiveVariables = matrix(1.0, (2, len(self.original)))
+		inequalityConstraints = matrix()
+
 	def checkEntropy(self, delta):
 		const = 0
 		for index in range(len(self.cost)):
@@ -78,7 +102,6 @@ class ODFilter(object):
 
 		inequalityConstraints = matrix(-1., (2 + self.k, self.k))
 		inequalitySolutions = matrix(0., (2 + self.k, 1))
-
 		for i, mat in enumerate(self.validTours):
 			c = 0
 			for index in range(len(self.cost)):
@@ -98,6 +121,7 @@ class ODFilter(object):
 		for i in range(self.k):
 			total += sol['x'][i]*inequalityConstraints[1,i]
 		print(sol['x'])
+		print(self.linkCost)
 		return sol['x']
 
 	def F(self, x = None, z = None):
@@ -113,6 +137,7 @@ class ODFilter(object):
 		return f, Df, H
 
 	def run(self, maxK, delta):
+		self.optimizeLinkCost()
 		maxIter = 10
 		iterations = 0
 		while (iterations < maxIter):
@@ -137,20 +162,25 @@ class ODFilter(object):
 				else:
 					self.tours.append(mat)
 
-	def getResults(self, ori, dest):
+	def getResults(self, data, ori, dest):
 		if (self.diffusion):
 			results = []
 			for index in range(len(self.validTours)):
 				mat = matrix(self.validTours[index], (self.o, self.d))
 				k = 0
 				locations = {}
+				ids = {}
 				for i in range(self.o):
 					row = []
 					for j in range(self.d):
 						if(mat[i,j] > 0.):
 							k += 1
-							locations[k] = (ori[i], dest[j])
-				results.append((locations, self.diffusion[index]))
+							try: 
+								locations[k] = (ori[i], dest[j])
+								ids[k] = (i,j)
+							except:
+								import pdb; pdb.set_trace()
+				results.append((ids, locations, self.diffusion[index]))
 			return results
 		return None
 

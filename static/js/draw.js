@@ -11,6 +11,9 @@ function change(input) {
 
 function init() {
 	$("#searchButton").click(fetchData);
+	$("#selectToggle").change(function () {
+		selectTours(this.checked);
+	});
 	initMap();
 }
 
@@ -28,14 +31,20 @@ function selectTours(all) {
 			paths[key]['polyline'].setMap(map);
 			paths[key]['start'].setMap(map);
 		}
-		$(".toursCheckboxes").checked = true;
+		var elements = $(".toursCheckboxes");
+		for (var i = 0; i < elements.length; ++i) {
+			elements[i].checked = true;
+		}
 	}
 	else {
 		for (key in paths){
 			paths[key]['polyline'].setMap(null);
 			paths[key]['start'].setMap(null);
 		}
-		$(".toursCheckboxes").checked = false;
+		var elements = $(".toursCheckboxes");
+		for (var i = 0; i < elements.length; ++i) {
+			elements[i].checked = false;
+		}
 	}
 }
 
@@ -47,17 +56,28 @@ function fetchData() {
 	var s = $(".tourListElement");
 	var list = document.getElementById("tourList");
 	for (var i = 0; i < s.length; ++i) {
-		list.removeChild(l[i]);
+		list.removeChild(s[i]);
 	}
 	paths = {}
-	retrieveData().done(tourData => {
+	var param = checkValid();
+	if (!param) {
+		console.log("INVALID PARAMETERS")
+		return None
+	}
+	var body = document.getElementById("resultsBody");
+	for (var i = 0; i < body.children.length; ++i) {
+		body.removeChild(body.children[0]);	
+	}
+	retrieveData(param).done(tourData => {
 		var list = document.getElementById("tourList");
-		for (key in tourData) {
+		var idData = tourData[0];
+		var locationData = tourData[1];
+		for (key in locationData) {
 			if (key == 0) {
 				continue;
 			}
-			populateMap(key, tourData[key], key%4);
-			populateTable(key, tourData[key]);
+			populateMap(key, locationData[key], key%4);
+			populateTable(key, idData[key], locationData[key]);
 			k = key.toString();
 			var item = document.createElement('li');
 			var checkbox = document.createElement('input')
@@ -183,8 +203,8 @@ function draw(response, key){
 	paths[key] = { 'polyline': path, 'start': start };
 }
 
-function populateTable(tourID, data) {
-	console.log(data);
+function populateTable(tourID, idData, locationData) {
+	console.log(idData);
 	var body = document.getElementById('resultsBody');
 	var row = document.createElement('tr');
 	var id = document.createElement('td');
@@ -192,15 +212,10 @@ function populateTable(tourID, data) {
 	row.appendChild(id);
 	var d;
 	var values = [0, 1, 2, 3];
-	for (index in data) {
-		if (data[index] in values) {
-			continue;
-		}
-		else {
-			d = document.createElement('td');
-			d.innerHTML = data[index];
-			row.appendChild(d);
-		}
+	for (index in idData) {
+		d = document.createElement('td');
+		d.innerHTML = idData[index].toString() + ', ' + locationData[index].toString();
+		row.appendChild(d);
 	}
 	body.appendChild(row);
 }
@@ -217,7 +232,10 @@ function checkValid() {
 			return false;
 		}
 	}
-	if (param.maxK <= 1 || param.delta <= 0) {
+	else if (param.maxK == '' || param.delta == '') {
+		return false;
+	}
+	else if (param.maxK <= 1 || param.delta <= 0 || param.num <= 0) {
 		return false;
 	}
 	var sfile = document.getElementById('sFile').files;
@@ -239,16 +257,13 @@ function checkValid() {
 	return param;
 }
 
-function retrieveData() {
-	var param = checkValid();
-	if (param) {
-		return $.ajax({
-			url: "run/OD",
-			type: "POST",
-			data: JSON.stringify(param),
-			contentType: 'application/json'
-		});
-	}
+function retrieveData(param) {
+	return $.ajax({
+		url: "run/OD",
+		type: "POST",
+		data: JSON.stringify(param),
+		contentType: 'application/json'
+	});
 }
 
 function uploadFile(name){

@@ -16,9 +16,26 @@
 	<!-- events -->
 	<script src="/static/js/draw.js"></script>
 	<link rel="stylesheet" href="/static/css/custom.css" />
+	<style>
+		#Banner {
+			background-color: #57068c;
+			height: auto;
+			width: 100%;
+			padding-top: 5%;
+			padding-bottom: 5%;
+		}
+
+		#BannerText {
+			font: Arial;
+			color: white;
+			text-align: center;
+		}
+	</style>
 </head>
 <body>
-	<h1 id= "Banner">Tour Data [banner/logo?]</h1>
+	<div id="Banner">
+		<h1 id="BannerText"> Privacy Data Visualization </h1>
+	</div>
 	<div class="container-fluid">
 		<div class="row content">
 			<div class="col-sm-3 sidenav">
@@ -34,30 +51,6 @@
 							</a>
 						<li/>
 					</ul><br>
-				<form>
-					<div class="form-inline">
-						<div class="input-group">
-							<div class="input-group-addon">
-								<span class="input-group-text">Tours</span>
-							</div>
-							<input type="number" class="form-control form-control-inline" min="1" max="279" id="querySizeInput" placeholder="279">
-						</div>
-						<div-inline class="dropdown">
-							<button class="form-control-inline btn btn-primary dropdown-toggle" id="deltaInput" type="button" data-toggle="dropdown">
-								Delta
-								<span class="caret"></span>
-							</button>
-							<ul class="dropdown-menu">
-								<li><p onclick=change(0.2)>0.2</p></li>
-								<li><p onclick=change(0.3)>0.3</p></li>
-							</ul>
-						</div-inline>
-						<button class="btn btn-default" id="tempButton" type="button">
-							<span class="glyphicon glyphicon-search"></span>
-						</button>
-					</div>
-
-				</form>
 			</div>
 			<ul class="nav nav-pills col-sm-9" id="navSelection">
 				<li><a href="#querySelect" data-toggle="pill">Search</a></li>
