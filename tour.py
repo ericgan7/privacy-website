@@ -10,8 +10,10 @@ class Tour(object):
 		self.solver = lp.ODFilter()
 		self.file = None
 		self.sfile = None
+		self.zfile = None
 		self.sreader = None
 		self.lreader = None
+		self.zreader = None
 		self.matrix = None
 		self.lmatrix = None
 		self.origins = {}
@@ -22,37 +24,43 @@ class Tour(object):
 		self.data = []
 		self.timeFormat = "%H:%M"
 		self.dateFormat = "%Y-%m-%d"
-		self.supplyProb = []
-		self.demandProb = []
+		self.supplyProb = {}
+		self.demandProb = {}
 		self.date = ''
 		self.supply = {}
 		self.demand = {}
+		self.zoneProb = []
+		self.zones = {}
+		self.weightedlmatrix = None
 
-	def new(self, stopName, locationName):
+	def new(self, stopName, locationName, zoneName):
 		self.origins = {}
 		self.destinations = {}
 		self.originLoc = []
 		self.destinationLoc = []
 		self.data = []
-		self.matrix = None
-		self.lmatrix = None
 		self.sfile = open(stopName, 'r', newline ='')
 		self.lfile = open(locationName, 'r', newline = '')
+		self.zfile = open(zoneName, 'r', newline = '')
 		self.sreader = csv.DictReader(self.sfile, delimiter = ',')
 		self.lreader = csv.DictReader(self.lfile, delimiter = ',')
-		self.supplyProb = []
-		self.demandProb = []
+		self.zreader = csv.reader(self.zfile, delimiter = ',')
+		self.supplyProb = {}
+		self.demandProb = {}
 		self.date = ''
 		self.supply = {}
 		self.demand = {}
+		self.zones = {}
+		self.zoneProb = []
 
-	def run(self, date, maxK, delta, limit):
+	def run(self, date, times, maxK, delta, limit):
 		self.date = date
-		dept = self.getData(limit)
-		self.formatData(int(dept.timestamp()))
+		dept = self.getData(limit, times)
+		parameters = self.zoneProb
+		self.formatData(int(dept.timestamp()), parameters)
 		return self.runDiffusion(maxK, delta)
 
-	def check(self, date):
+	def checkDate(self, date):
 		date = (datetime.strptime(date, self.dateFormat))
 		if (self.date[0] and self.date[1]):
 			return date >= self.date[0] and date <= self.date[1]
@@ -62,23 +70,34 @@ class Tour(object):
 			return date <= self.date[1]
 		else:
 			return True
-	def getData(self, limit):
+	def checkTime(self, times, t):
+		if times[0] and times[1]:
+			return t >= times[0] and t <= times[1]
+		elif times[0]:
+			return t >= times[0]
+		elif times[1]:
+			return t <= times[1]
+		else:
+			return True
+
+	def getData(self, limit, times):
 		num_o = 0
 		num_d = 0
 		if not limit or limit <= 0:
 			limit = 10
+		for count, row in enumerate(self.zreader):
+			self.zones[count] = set()
+			for z in row:
+				self.zones[count].add(z)
 		for row in self.lreader:
-			try:
-				if row['location_id'] not in self.locations:
-					self.locations[row['location_id']] = (row['latitude'] +','+ row['longitude'])
-			except KeyError:
-				import pdb; pdb.set_trace()
-		t = self.getSupplyDemand()
-		s = list(self.supply)
-		d = list(self.demand)
+			if row['location_id'] not in self.locations:
+				self.locations[row['location_id']] = (row['latitude'] +','+ row['longitude'])
+		t = self.getSupplyDemand(times)
+		p = list(self.zones)
 		for i in range(limit):
-			x = random.choice(s, p = self.supplyProb)
-			y = random.choice(d, p = self.demandProb)
+			z = random.choice(p, p = self.zoneProb)
+			x = random.choice(list(self.supply[z]), p = self.supplyProb[z])
+			y = random.choice(list(self.demand[z]), p = self.demandProb[z])
 			if (x not in self.origins):
 				self.origins[x] = len(self.origins)
 				self.originLoc.append(self.locations[x])
@@ -88,31 +107,45 @@ class Tour(object):
 			self.data.append((x,y))
 		return t
 
-	def getSupplyDemand(self):
+	def getSupplyDemand(self, times):
 		total = 0
 		t = 0
+		for i in range(len(self.zones)):
+			self.supply[i] = {}
+			self.demand[i] = {}
 		for row in self.sreader:
-			if self.check(row['timestamp'][:10]):
+			if self.checkDate(row['timestamp'][:10]) and self.checkTime(times, row['timestamp'][11:]):
 				if t == 0:
 					date = datetime.strptime(row['timestamp'], self.dateFormat + ' ' + self.timeFormat)
 					t = datetime(datetime.now().year + 1, date.month, date.day, date.hour, date.minute)
 				if row['origin_id'] in self.locations and row['destination_id'] in self.locations:
-					total += 1
-					if (row['destination_id'] not in self.supply):
-						self.supply[row['destination_id']] = 1
+					total += 2
+					ozone = 0
+					dzone = 0
+					for group in self.zones:
+						if row['origin_id'] in self.zones[group]:
+							ozone = group
+						if row['destination_id'] in self.zones[group]:
+							dzone = group
+					if (row['destination_id'] not in self.supply[dzone]):
+						self.supply[dzone][row['destination_id']] = 1
 					else:
-						self.supply[row['destination_id']] += 1
-					if (row['origin_id'] not in self.demand):
-						self.demand[row['origin_id']] = 1
+						self.supply[dzone][row['destination_id']] += 1
+					if (row['origin_id'] not in self.demand[ozone]):
+						self.demand[ozone][row['origin_id']] = 1
 					else:
-						self.demand[row['origin_id']] += 1
-		for i, s in enumerate(self.demand.values()):
-			self.demandProb.append(float(s)/total)
-		for i, s in enumerate(self.supply.values()):
-			self.supplyProb.append(float(s)/total)
+						self.demand[ozone][row['origin_id']] += 1
+		for z in self.zones:
+			self.demandProb[z] = []
+			self.supplyProb[z] = []
+			for s in self.supply[z].values():
+				self.supplyProb[z].append(float(s)/sum(self.supply[z].values()))
+			for s in self.demand[z].values():
+				self.demandProb[z].append(float(s)/sum(self.demand[z].values()))
+			self.zoneProb.append(float(sum(self.supply[z].values())+sum(self.demand[z].values()))/total)
 		return t
 
-	def formatData(self, dept):
+	def formatData(self, dept, parameters):
 		if (len(self.origins) > 100 or len(self.destinations) > 100):
 			print("Too Many stops to calculate")
 		self.matrix = matrix(0., (len(self.origins), len(self.destinations)))
@@ -143,15 +176,20 @@ class Tour(object):
 		except FileNotFoundError:
 			"""
 		self.lmatrix = distance.getDistanceMatrix(self.originLoc, self.destinationLoc, dept)
+		self.weightedlmatrix = self.lmatrix
 		distance.storeResult('distances.csv', self.lmatrix, self.origins, self.destinations)
-		for o, d in self.data:
+		for index, (o, d) in enumerate(self.data):
 			x = self.origins[o]
 			y = self.destinations[d]
 			self.matrix[x,y] += 1
+			for group in self.zones:
+				if y in self.zones[group]:
+					self.weightedlmatrix[index] *= parameters[group]
+					break;
 
 	def runDiffusion(self, maxK, delta):
 		print(self.lmatrix)
-		self.solver.new(self.matrix, self.lmatrix, len(self.origins), len(self.destinations))
+		self.solver.new(self.matrix, self.lmatrix, self.weightedlmatrix, len(self.origins), len(self.destinations))
 		self.solver.run(maxK, delta)
 		return self.solver.getResults(self.origins, self.destinations, self.originLoc, self.destinationLoc)
 

@@ -65,9 +65,10 @@ function fetchData() {
 		return None
 	}
 	var body = document.getElementById("resultsBody");
-	for (var i = 0; i < body.children.length; ++i) {
+	while (body.children.length > 0){
 		body.removeChild(body.children[0]);	
 	}
+	$('a[href="#mapSelect"').tab('show');
 	retrieveData(param).done(tourData => {
 		var list = document.getElementById("tourList");
 		var idData = tourData[0];
@@ -221,10 +222,17 @@ function checkValid() {
 	param.delta = parseFloat(document.getElementById('delta').value);
 	param.num = parseInt(document.getElementById('numTours').value);
 	param.maxK = parseInt(document.getElementById('maxK').value);
+	param.startTime = document.getElementById('startTime').value;
+	param.endTime = document.getElementById('endTime').value;
 	param.startDate = document.getElementById('startDate').value;
 	param.endDate = document.getElementById('endDate').value;
 	if (param.startDate != '' && param.endDate != '') {
 		if (new Date(param.startDate).getDate() > new Date(param.endDate).getDate()) {
+			return false;
+		}
+	}
+	if (param.startTime != '' && param.endTime != '') {
+		if (param.startTime > param.endTime) {
 			return false;
 		}
 	}
@@ -248,8 +256,16 @@ function checkValid() {
 	else {
 		lfile = null;
 	}
+	var zfile = document.getElementById('lFile').files;
+	if (zfile.length > 0) {
+		zfile = lfile[0].name;
+	}
+	else {
+		zfile = null;
+	}
 	param.sFile = sfile;
 	param.lFile = lfile;
+	param.zFile = zFile;
 	return param;
 }
 

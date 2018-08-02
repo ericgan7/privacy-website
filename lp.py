@@ -22,13 +22,15 @@ class ODFilter(object):
 			self.validTours.append(matrix)
 		if (lmatrix):
 			self.linkCost = lmatrix
+		self.wlmatrix = None
 
-	def new(self, matrix, lmatrix, origins, destinations):
+	def new(self, matrix, lmatrix, wlmatrix, origins, destinations):
 		self.o = origins
 		self.d = destinations
 		self.tours = []
 		self.original = matrix
 		self.linkCost = lmatrix
+		self.wlmatrix = wlmatrix
 		self.cost = None
 		self.validTours = []
 		self.invalidTours = []
@@ -40,7 +42,7 @@ class ODFilter(object):
 			self.record(self.original, 'Original', '', self.o, self.d)
 
 	def optimizeLinkCost(self):
-		costMat = matrix(self.linkCost, (len(self.original), 1))
+		costMat = matrix(self.wlmatrix, (len(self.original), 1))
 		variableConstraints = matrix(-1.*numpy.eye(len(costMat)))
 		equalityConstraints = matrix(0., (self.o + self.d, len(costMat)))
 		variableSolutions = matrix(numpy.zeros(len(costMat)), (len(costMat), 1))
@@ -180,7 +182,6 @@ class ODFilter(object):
 							except:
 								import pdb; pdb.set_trace()
 				results.append((ids, locations, self.diffusion[index]))
-			import pdb; pdb.set_trace()
 			return results
 		return None
 

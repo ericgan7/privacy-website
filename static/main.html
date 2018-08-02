@@ -56,7 +56,7 @@
 				<li><a href="#querySelect" data-toggle="pill">Search</a></li>
 				<li class="active"><a href="#mapSelect" data-toggle="pill">Map</a></li>
 				<li><a href="#tableSelect" data-toggle="pill">Table</a></li>
-				<li><a href="#compareSelect" data-toggle="pill">Comparison</a></li>
+				<li><a href="#compareSelect" data-toggle="pill">Statistics</a></li>
 			</ul>
 			<div class="tab-content">
 				<div id="querySelect" class="tab-pane fade in">
@@ -83,16 +83,32 @@
 								</p>
 							</div>
 							<div class="form-group">
-								<label for="startDate">Start</label>
+								<label for="zFile">Latitude & Longitude File</label>
+								<input type="file" class="form-control-file" id="zFile" name="zFile" onchange="uploadFile('zFile')" />
+								<p>
+									Each row should list a set of stops in a zone
+								</p>
+							</div>
+							<div class="form-group">
+								<label for="startTime">Start Time</label>
+								<input type="time" id="startTime" />
+								<label> - </label>
+								<label for="endTime">End Time</label>
+								<input type="time" id="endTime" />
+							</div>
+							<div class="form-group">
+								<label for="startDate">Start Date</label>
 								<input type="date" id="startDate"/>
 								<label> - </label>
-								<label for="endDate">End</label>
+								<label for="endDate">End Date</label>
 								<input type="date" id="endDate"/>
 							</div>
 							<div class="form-group">
-								<label for="numTours">Parameters</label>
+								<label for="numTours">Total Data</label>
 								<input type="number" id="numTours" placeholder="Number of Tours"/>
+								<label for="maxK">K-diffusion</label>
 								<input type="number" id="maxK" placeholder="K"/>
+								<label for="delta">Delta</label>
 								<input type="number" id="delta" placeholder="Delta"/>
 							</div>
 							<div class="form-group">

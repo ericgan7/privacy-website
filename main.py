@@ -39,18 +39,26 @@ def getTour(param):
 @data.route("/run/OD", methods=['POST'])
 def getOD():
 	param = request.json
-	if not (param['sFile'] and ['param.lFile']):
+	if not (param['sFile'] or param['lFile']) or param['zFile']:
 		param['sFile'] = 'sample.csv'
-		param['lFile'] = 'location.csv'
+		param['lFile'] = 'manhattan_locations.csv'
+		param['zFile'] = 'manhattan_zones.csv'
 	start = None
 	end = None
+	st = "00:00"
+	et = "23:59"
 	if (param['startDate']):
 		start = datetime.strptime(param['startDate'], '%Y-%m-%d')
 	if (param['endDate']):
 		end = datetime.strptime(param['endDate'], '%Y-%m-%d')
+	if (param['startTime']):
+		st = param['startTime']
+	if (param['endTime']):
+		et = param['endTime']
 	dates = (start, end)
-	lp.new('data/'+param['sFile'], 'data/'+param['lFile'])
-	return jsonify(display.assignTour(lp.run(dates, param['maxK'], param['delta'], limit=param['num'])))
+	times = (st, et)
+	lp.new('data/'+param['sFile'], 'data/'+param['lFile'], 'data/'+param['zFile'])
+	return jsonify(display.assignTour(lp.run(dates, times, param['maxK'], param['delta'], limit=param['num'])))
 
 @data.route("/run/OD/<name>", methods=["POST"])
 def uploadFile(name):
