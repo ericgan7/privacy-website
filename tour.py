@@ -194,13 +194,26 @@ class Tour(object):
 		return self.solver.getResults(self.origins, self.destinations, self.originLoc, self.destinationLoc)
 
 	def getProb(self):
-		return (self.supply, self.supplyProb, self.demand, self.demandProb)
-"""
+		sprob = []
+		sup = []
+		dprob = []
+		dem = []
+		for z in self.zones:
+			for s in list(self.supply[z]):
+				sup.append(s)
+			for s in self.supplyProb[z]:
+				sprob.append(s * self.zoneProb[z])
+			for d in list(self.demand[z]):
+				dem.append(d)
+			for d in self.demandProb[z]:
+				dprob.append(d * self.zoneProb[z])
+		import pdb; pdb.set_trace()
+		return (sup, sprob, dem, dprob)
+
 t = Tour()
-t.new('data/sample.csv', 'data/location.csv')
-data = t.run((None, None), 4, 150, limit = 5)
+t.new('data/sample.csv', 'data/manhattan_locations.csv', 'data/manhattan_zones.csv')
+data = t.run((None, None),(None, None), 4, 150, limit = 5)
 import display
 x = display.formatProb(t.getProb())
 print(x)
-"""
 				

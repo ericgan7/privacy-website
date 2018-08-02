@@ -16,21 +16,6 @@
 	<!-- events -->
 	<script src="/static/js/draw.js"></script>
 	<link rel="stylesheet" href="/static/css/custom.css" />
-	<style>
-		#Banner {
-			background-color: #57068c;
-			height: auto;
-			width: 100%;
-			padding-top: 5%;
-			padding-bottom: 5%;
-		}
-
-		#BannerText {
-			font: Arial;
-			color: white;
-			text-align: center;
-		}
-	</style>
 </head>
 <body>
 	<div id="Banner">
@@ -83,7 +68,7 @@
 								</p>
 							</div>
 							<div class="form-group">
-								<label for="zFile">Latitude & Longitude File</label>
+								<label for="zFile">Zone Weight File</label>
 								<input type="file" class="form-control-file" id="zFile" name="zFile" onchange="uploadFile('zFile')" />
 								<p>
 									Each row should list a set of stops in a zone
@@ -141,17 +126,10 @@
 					</div>
 				</div>
 				<div id="compareSelect" class="tab-pane fade in">
-					<div class="box col-sm-9">
-						
-					</div>
 				</div>
 			</div>
 		</div>
 	</div>
-
-	<footer class="container-fluid">
-		<p>Footer Text</p>
-	</footer>
 
 </body>
 </html>
