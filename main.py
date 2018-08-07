@@ -19,23 +19,9 @@ app.register_blueprint(views)
 lp = tour.Tour()
 
 data = Blueprint('data_routes', __name__)
-@data.route("/run/tourset/<param>")
-def getTour(param):
-	delta = float(param[:3])
-	num = int(param[3:])
-	drawFunc.reset(str(delta))
-	iteration = 0
-	max = 279
-	random.seed()
-	i = random.randint(1, max)
-	while iteration < num and iteration < max:
-		i = (i + 1)%max
-		file = 'data/tourset' + str(i) + '.csv'
-		traj = 'data/trajectory/xytraj' + str(i) + '.csv'
-		if(drawFunc.new(file, traj, delta)):
-			if(drawFunc.run(i, delta)):
-				iteration += 1
-	return jsonify(drawFunc.getData())
+#Called when there is a query request. 
+	#Inputs parameters and file names
+	#Outputs the OD data
 @data.route("/run/OD", methods=['POST'])
 def getOD():
 	param = request.json
@@ -60,6 +46,8 @@ def getOD():
 	lp.new('data/'+param['sFile'], 'data/'+param['lFile'], 'data/'+param['zFile'])
 	return jsonify(display.assignTour(lp.run(dates, times, param['maxK'], param['delta'], limit=param['num'])))
 
+#Called when there is a file upload, everytime a new file is loaded
+	#input file data
 @data.route("/run/OD/<name>", methods=["POST"])
 def uploadFile(name):
 	if request.method == 'POST':
@@ -67,17 +55,11 @@ def uploadFile(name):
 		return "SUCCESSFUL UPLOAD"
 	return "ERROR IN UPLOAD"
 
+#Called when rqeuesting statistical data for charts
+	#Output - supply, supply probability, demand, demand probability
 @data.route("/get/supplydemand", methods=['GET'])
 def getProb():
 	return jsonify(display.formatProb(lp.getProb()))
-
-@data.route("/get/distance", methods=['GET'])
-def getDistance():
-	return jsonify()
-
-@data.route("/map")
-def getStops():
-	return jsonify(drawFunc.getTrajectory())
 
 app.register_blueprint(data)
 

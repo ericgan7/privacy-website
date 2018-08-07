@@ -147,8 +147,8 @@
 			background-color: #57068c;
 			height: auto;
 			width: 100%;
-			padding-top: 5%;
-			padding-bottom: 5%;
+			padding-top: 15px;
+			padding-bottom: 20px;
 		}
 		#BannerText {
 			font: Arial;

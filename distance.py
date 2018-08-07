@@ -7,10 +7,11 @@ import time
 base_url = 'https://maps.googleapis.com/maps/api/distancematrix/json?'
 api_key = 'AIzaSyBqpLvV-_k0XAhR_RaEprhlDjorrkp-UP0'
 
+#Gets distance matrix
 def getDistanceMatrix(origin, destination, dept):
 	progress = 0
+	#blank matrix
 	linkCost = matrix(0., (len(origin), len(destination)))
-	delay = (len(destination)+2)/ 10.
 	t = time.time()
 	while progress < len(origin):
 		payload = {
@@ -28,6 +29,7 @@ def getDistanceMatrix(origin, destination, dept):
 			if(mat['status'] != 'OK'):
 				print('QUERY ERROR')
 			else:
+				#Request is sucessful - adds it into distance matrix
 				for i, row in enumerate(mat['rows']):
 					for j, data in enumerate(row['elements']):
 						try:
@@ -38,7 +40,7 @@ def getDistanceMatrix(origin, destination, dept):
 	print(time.time() - t)
 	return linkCost
 
-##for testing, not requiring multiple calls
+#stores the results of distance matrix
 def storeResult(fileName, linkCost, originNames, destNames):
 	with open(fileName, 'w', newline = '') as file:
 		writer = csv.writer(file, delimiter = ',')

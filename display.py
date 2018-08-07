@@ -1,6 +1,8 @@
 from cvxopt import matrix
 import random
+#This file is used to formatting the data for JSON format.
 
+#Generates a random number and samples the data
 def assignTour(data):
 	random.seed()
 	index = random.random()
@@ -11,8 +13,8 @@ def assignTour(data):
 			print("probability total " + str(total) + ', ' + str(index))
 			return (dataSet[0], dataSet[1])
 
+#Format the probability into JSON format
 def formatProb(data):
-	import pdb; pdb.set_trace()
 	supply = data[0]
 	supProb = data[1]
 	demand = data[2]

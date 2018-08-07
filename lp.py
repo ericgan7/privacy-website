@@ -41,12 +41,16 @@ class ODFilter(object):
 		if (recordParam):
 			self.record(self.original, 'Original', '', self.o, self.d)
 
+	# Remakes original matrix so that it is distance optimized
+		#uses a weighted matrix based on zone
+		#for pure distance, switch cost matrix from self.wlmatrix to self.lmatrix
 	def optimizeLinkCost(self):
 		costMat = matrix(self.wlmatrix, (len(self.original), 1))
 		variableConstraints = matrix(-1.*numpy.eye(len(costMat)))
 		equalityConstraints = matrix(0., (self.o + self.d, len(costMat)))
 		variableSolutions = matrix(numpy.zeros(len(costMat)), (len(costMat), 1))
 		equalitySolutions = matrix(0., (self.o + self.d, 1))
+		#sets the equailty constraints to the correct sum in row / column
 		for i in range(self.d):
 			temp = self.original[:, i]
 			for index in range(self.o):
@@ -61,9 +65,11 @@ class ODFilter(object):
 				equalityConstraints, equalitySolutions, solver='glpk')['x'], (self.o, self.d))
 		print(self.original)
 
+	#sp1 - generate new tours
 	def generateTours(self, max):
 		while self.k < max:
 			costMat = matrix(0., (len(self.original), 1))
+			#cost matrix aggregating in U and K everystep
 			for mat in self.tours:
 				for index, value in enumerate(mat):
 					costMat[index] += value
@@ -74,6 +80,7 @@ class ODFilter(object):
 			equalityConstraints = matrix(0., (self.o + self.d, len(costMat)))
 			variableSolutions = matrix(numpy.zeros(len(costMat)), (len(costMat), 1))
 			equalitySolutions = matrix(0., (self.o + self.d, 1))
+			#sets the equailty constraints to the correct sum in row / columm
 			for i in range(self.d):
 				temp = self.original[:, i]
 				for index in range(self.o):
@@ -84,7 +91,7 @@ class ODFilter(object):
 				for index in range(self.d):
 					equalityConstraints[i + self.d, self.o*index + i] = 1
 				equalitySolutions[self.d + i] = sum(temp)
-
+			#glpk solver to get new od matrix. cvxopt for documentation
 			newMat = solvers.lp(costMat, variableConstraints, variableSolutions,
 				equalityConstraints, equalitySolutions, solver='glpk')
 			if (recordParam):
@@ -93,15 +100,16 @@ class ODFilter(object):
 			self.tours.append(newMat['x'])
 			self.k += 1
 
+	#not implemented
 	def inverseOptimization(self):
 		objectiveVariables = matrix(1.0, (2, len(self.original)))
 		inequalityConstraints = matrix()
 
+	#sp2 - assigns diffusion based on principle of maximum entropy
 	def checkEntropy(self, delta):
 		const = 0
 		for index in range(len(self.cost)):
 			const += self.linkCost[index]*self.original[index]
-
 		inequalityConstraints = matrix(-1., (2 + self.k, self.k))
 		inequalitySolutions = matrix(0., (2 + self.k, 1))
 		for i, mat in enumerate(self.validTours):
@@ -115,6 +123,7 @@ class ODFilter(object):
 
 		equalityConstraints = matrix(1., (1, self.k))
 		equalitySolutions = matrix(1., (1,1))
+		#uses a nonlinear convex problem solver. see cvxopt for documentation
 		sol = solvers.cp(self.F, G=inequalityConstraints, h=inequalitySolutions,
 			A=equalityConstraints, b=equalitySolutions)
 		if(recordParam):
@@ -122,10 +131,16 @@ class ODFilter(object):
 		total = 0.
 		for i in range(self.k):
 			total += sol['x'][i]*inequalityConstraints[1,i]
+		#max iterations of 200 does not always find optimal solution. 
+		#Unsure if I should increase the cap or just use unoptimal solution.
 		print(sol['x'])
 		print(self.linkCost)
 		return sol['x']
 
+	#objective function used for diffusion
+		#f is the function (x ln x)
+		#df is the first derivative
+		#H is the second derivative
 	def F(self, x = None, z = None):
 		if(x is None): 
 			return 0, matrix(1., (len(self.validTours), 1))
@@ -138,19 +153,25 @@ class ODFilter(object):
 		H = spdiag(z * x**(-1))
 		return f, Df, H
 
+	#running the filter
 	def run(self, maxK, delta):
+		#set original matrix
 		self.optimizeLinkCost()
 		maxIter = 10
 		iterations = 0
 		while (iterations < maxIter):
 			print("ITERATION " + str(iterations))
 			iterations += 1
+			#generate set of k tours
 			self.generateTours(maxK)
+			#assign diffuction
 			sol = self.checkEntropy(delta)
+			#if all are greater than zero, accept the solution
 			if (min(sol) > 0):
 				self.diffusion = sol
 				return
 			removal = []
+			#else continue to generate tours
 			for i in range(sol.size):
 				if (sol[i] == 0.):
 					self.invalidTours.append(self.validTours[i])
@@ -163,7 +184,8 @@ class ODFilter(object):
 					continue
 				else:
 					self.tours.append(mat)
-
+	#returns (stop ids, locations, and probability) in format:
+		#	((originid, destinationid), (origin latlng, destination latlng), probability)
 	def getResults(self, ori, dest, oLoc, dLoc):
 		if (self.diffusion):
 			results = []
@@ -185,6 +207,7 @@ class ODFilter(object):
 			return results
 		return None
 
+		#records results for testing
 	def record(self, matrix, type, iteration, o, d):
 		with  open(str(type)+str(iteration)+'.csv', 'w', newline = '') as file:
 			writer = csv.writer(file, delimiter=',')
