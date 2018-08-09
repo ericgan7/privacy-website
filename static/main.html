@@ -13,16 +13,21 @@
 	<script src="https://gitcdn.github.io/bootstrap-toggle/2.2.2/js/bootstrap-toggle.min.js"></script>
 	<!-- Google Maps-->
 	<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBqpLvV-_k0XAhR_RaEprhlDjorrkp-UP0"></script>
-	<!-- events -->
+	<!-- Chart -->
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.2/Chart.js"></script>
+	<!-- Events -->
 	<script src="/static/js/draw.js"></script>
+	<!-- Style -->
 	<link rel="stylesheet" href="/static/css/custom.css" />
 </head>
 <body>
+	<!-- Banner -->
 	<div id="Banner">
 		<h1 id="BannerText"> Privacy Data Visualization </h1>
 	</div>
 	<div class="container-fluid">
 		<div class="row content">
+			<!-- Sidebar -->
 			<div class="col-sm-3 sidenav">
 				<h3>Tours</h3>
 				<button class="tours btn btn-primary" type="button" data-toggle="collapse" data-target="#tourList">All Tours <span class="caret"></span></button>
@@ -37,22 +42,27 @@
 						<li/>
 					</ul><br>
 			</div>
+			<!-- Nav Tabs -->
 			<ul class="nav nav-pills col-sm-9" id="navSelection">
 				<li><a href="#querySelect" data-toggle="pill">Search</a></li>
 				<li class="active"><a href="#mapSelect" data-toggle="pill">Map</a></li>
 				<li><a href="#tableSelect" data-toggle="pill">Table</a></li>
-				<li><a href="#compareSelect" data-toggle="pill">Statistics</a></li>
+				<li><a href="#statisticSelect" data-toggle="pill">Statistics</a></li>
 			</ul>
+			<!-- Tab content -->
 			<div class="tab-content">
+				<!-- Query -->
 				<div id="querySelect" class="tab-pane fade in">
 					<div class="box col-sm-9">
 						<form class="embed-container form-horizontal">
+							<!-- Data Type - Only have OD right now -->
 							<div class="form-group">
 								<label for="dataType">Data Type</label>
 								<select class="form-control" id="dataType">
 									<option>Idle Assignment</option>
 								</select>
 							</div>
+							<!-- OD data pairs-->
 							<div class="form-group">
 								<label for="sFile">Origin & Destination File</label>
 								<input type="file" class="form-control-file" id="sFile" name = "sFile" onchange="uploadFile('sFile')"/>
@@ -60,6 +70,7 @@
 									Requires Headers { origin_id, destination_id, timestamp }
 								</p>
 							</div>
+							<!-- Latitude Longitude information for location ids -->
 							<div class="form-group">
 								<label for="lFile">Latitude & Longitude File</label>
 								<input type="file" class="form-control-file" id="lFile" name="lFile" onchange="uploadFile('lFile')"/>
@@ -67,6 +78,7 @@
 									Requires Headers { location_id, latitude, longitude }
 								</p>
 							</div>
+							<!-- Zone sets -->
 							<div class="form-group">
 								<label for="zFile">Zone Weight File</label>
 								<input type="file" class="form-control-file" id="zFile" name="zFile" onchange="uploadFile('zFile')" />
@@ -74,6 +86,7 @@
 									Each row should list a set of stops in a zone
 								</p>
 							</div>
+							<!-- Time range -->
 							<div class="form-group">
 								<label for="startTime">Start Time</label>
 								<input type="time" id="startTime" />
@@ -81,6 +94,7 @@
 								<label for="endTime">End Time</label>
 								<input type="time" id="endTime" />
 							</div>
+							<!-- Date range -->
 							<div class="form-group">
 								<label for="startDate">Start Date</label>
 								<input type="date" id="startDate"/>
@@ -88,6 +102,7 @@
 								<label for="endDate">End Date</label>
 								<input type="date" id="endDate"/>
 							</div>
+							<!-- Parametrs: Num, K, Delta -->
 							<div class="form-group">
 								<label for="numTours">Total Data</label>
 								<input type="number" id="numTours" placeholder="Number of Tours"/>
@@ -96,6 +111,7 @@
 								<label for="delta">Delta</label>
 								<input type="number" id="delta" placeholder="Delta"/>
 							</div>
+							<!-- Search -->
 							<div class="form-group">
 								<button class="btn btn-primary" id="searchButton" type="button">
 									<p class="button-text">Search  <span class="glyphicon glyphicon-search"></span></p>
@@ -104,16 +120,16 @@
 						</form>
 					</div>
 				</div>
+				<!-- Map -->
 				<div id="mapSelect" class="tab-pane fade in active">
 					<div class="box col-sm-9">
-						<div class="embed-container" id="viewDiv">
-							
-						</div>
+						<div class="embed-container" id="viewDiv"></div>
 					</div>
 				</div>
+				<!-- Table -->
 				<div id="tableSelect" class="tab-pane fade in">
 					<div class="box col-sm-9">
-						<table class="table tablde-bordered table-hover" id="resultsTable">
+						<table class="table table-bordered table-hover" id="resultsTable">
 							<thead>
 								<tr>
 									<th>Tour ID</th>
@@ -128,7 +144,12 @@
 						</table>
 					</div>
 				</div>
-				<div id="compareSelect" class="tab-pane fade in">
+				<!-- Statistics	-->
+				<div id="statisticSelect" class="tab-pane fade in">
+					<div class="box col-sm-9">
+						<canvas id="supplyChart" class="chart"></canvas>
+						<canvas id="demandChart" class="chart"></canvas>
+					</div>
 				</div>
 			</div>
 		</div>

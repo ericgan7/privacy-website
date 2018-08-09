@@ -21,8 +21,8 @@ def formatProb(data):
 	demProb = data[3]
 	sup = {}
 	dem = {}
-	for index, key in enumerate(supply.keys()):
+	for index, key in enumerate(supply):
 		sup[key] = supProb[index]
-	for index, key in enumerate(demand.keys()):
+	for index, key in enumerate(demand):
 		dem[key] = demProb[index]
-	return {'origin': sup, 'destination': demand}
+	return {'origin': sup, 'destination': dem}

@@ -35,6 +35,7 @@ class Tour(object):
 		self.zones = {}
 		self.weightedlmatrix = None
 
+	#reset
 	def new(self, stopName, locationName, zoneName):
 		self.origins = {}
 		self.destinations = {}
@@ -199,6 +200,7 @@ class Tour(object):
 							y = self.destinations[dk]
 							self.lmatrix[x, y] = OD_distances[(ok, dk)]
 				except KeyError:
+					#if the file does not have all the necessary info, do a new search
 					self.getDistance(dept)
 			except FileNotFoundError:
 				self.getDistance(dept)
@@ -243,7 +245,7 @@ class Tour(object):
 			for d in self.demandProb[z]:
 				dprob.append(d * self.zoneProb[z])
 		return (sup, sprob, dem, dprob)
-"""
+"""Testing
 t = Tour()
 t.new('data/sample.csv', 'data/manhattan_locations.csv', 'data/manhattan_zones.csv')
 data = t.run((None, None),(None, None), 4, 150, limit = 5)

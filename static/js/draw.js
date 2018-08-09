@@ -1,6 +1,8 @@
 paths = {};
 red = 255;
 blue = 00;
+supplyChart = null;
+demandChart = null;
 
 //init document
 $(document).ready(
@@ -69,11 +71,13 @@ function fetchData() {
 		list.removeChild(s[i]);
 	}
 	paths = {}
+	//check that the query parameters are valid
 	var param = checkValid();
 	if (!param) {
 		console.log("INVALID PARAMETERS")
 		return None
 	}
+	//clear table
 	var body = document.getElementById("resultsBody");
 	while (body.children.length > 0){
 		body.removeChild(body.children[0]);	
@@ -111,6 +115,62 @@ function fetchData() {
 			item.setAttribute("onmouseleave", "dehighlightTour()");
 
 			list.appendChild(item);
+		}
+		//adds probability data of suply and demand after tours are generated
+		retrieveProb().done(data => {
+			console.log(data);
+			//removes old data
+			if (supplyChart && demandChart) {
+				supplyChart.destroy();
+				demandChart.destroy();
+			}
+			var color = 'rgba(66, 139, 202, 0.2)';
+			var bColor = 'rgba(66, 139, 202, 1.0)';
+			var supply = document.getElementById('supplyChart');
+			supplyChart = createChart(supply, 'Supply', Object.keys(data['origin']), Object.values(data['origin']), color, bColor);
+			var demand = document.getElementById('demandChart');
+			demandChart = createChart(demand, 'Demand', Object.keys(data['destination']), Object.values(data['destination']), color, bColor);
+		});
+	});
+}
+
+//creates chart. Requires
+	//document element, Supply/Demand, X axis data, Y axis data, bar color, border color
+function createChart(element, name, dataID, dataValue, color, bColor) {
+	return new Chart(element, {
+		type: 'bar',
+		data: {
+			labels: dataID,
+			datasets: [{
+				label: 'Tour Probability',
+				data: dataValue,
+				backgroundColor: color,
+				borderColor: bColor,
+				borderWidth: 1
+			}]
+		},
+		options: {
+			maintainAspectRatio: false,
+			title: {
+				display: true,
+				text: name + ' Distribution',
+				fontSize:20
+			},
+			scales: {
+				yAxes: [{
+					ticks: { beginAtZero: true },
+					scaleLabel: {
+						display: true,
+						labelString: 'Probability'
+					}
+				}],
+				xAxes: [{
+					scaleLabel: {
+						display: true,
+						labelString: name + ' ID'
+					}
+				}]
+			}
 		}
 	});
 }
@@ -338,6 +398,13 @@ function uploadFile(name){
 		fetchData: false,
 		processData: false
 	})
+}
+//retrieve probability data
+function retrieveProb() {
+	return $.ajax({
+		url: "get/supplydemand",
+		type: "GET"
+	});
 }
 
 //LERP gets the fraction between two numbers

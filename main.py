@@ -10,6 +10,7 @@ app = Flask(__name__, template_folder = './static')
 drawFunc = draw.draw()
 
 views = Blueprint('view_routes', __name__)
+#Displays html page
 @views.route("/display")
 def home():
     return render_template('main.html')
